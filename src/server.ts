@@ -23,7 +23,6 @@ export function createServer(searchService: SearchService): McpServer {
         query: z.string().describe('Search query'),
         limit: z
           .number()
-          .int()
           .min(1)
           .max(10)
           .optional()
