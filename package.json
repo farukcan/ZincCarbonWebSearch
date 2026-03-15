@@ -1,0 +1,29 @@
+{
+  "name": "zinc-carbon-web-search",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "zinc-carbon-web-search": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:http": "node dist/index.js --http"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Web search MCP server using Playwright",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "express": "^4.21.2",
+    "playwright": "^1.51.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.9.3"
+  }
+}
