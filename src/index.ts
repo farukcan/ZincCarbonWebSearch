@@ -10,6 +10,11 @@ const useHttp = args.includes('--http');
 const portIndex = args.indexOf('--port');
 const port = portIndex !== -1 && args[portIndex + 1] ? parseInt(args[portIndex + 1] ?? '3000', 10) : 3000;
 
+if (isNaN(port) || port < 1 || port > 65535) {
+  console.error(`Invalid port: ${args[portIndex + 1]}`);
+  process.exit(1);
+}
+
 const searchService = new SearchService();
 
 async function shutdown(): Promise<void> {
@@ -20,7 +25,12 @@ async function shutdown(): Promise<void> {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
-await searchService.init();
+try {
+  await searchService.init();
+} catch (err) {
+  console.error('[SearchService] Failed to initialize:', err instanceof Error ? err.message : err);
+  process.exit(1);
+}
 
 if (useHttp) {
   const app = createMcpExpressApp({ host: '0.0.0.0' });

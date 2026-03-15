@@ -1,11 +1,15 @@
+import { createRequire } from 'module';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { SearchService, type SearchEngine } from './search.js';
 
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json') as { version: string };
+
 export function createServer(searchService: SearchService): McpServer {
   const server = new McpServer({
     name: 'zinc-carbon-web-search',
-    version: '1.0.0',
+    version,
   });
 
   server.registerTool(
