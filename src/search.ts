@@ -67,6 +67,18 @@ export class SearchService {
     this.browser = null;
   }
 
+  async fetchSearchPageHtml(url: string): Promise<string> {
+    if (!this.context) throw new Error('SearchService not initialized');
+    const page = await this.context.newPage();
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+      await page.waitForTimeout(3000);
+      return await page.content();
+    } finally {
+      await page.close();
+    }
+  }
+
   async search(query: string, limit: number, engine: SearchEngine = 'auto'): Promise<SearchResult[]> {
     if (engine === 'duckduckgo') {
       return this.searchDuckDuckGo(query, limit);
@@ -77,20 +89,26 @@ export class SearchService {
     }
 
     // auto: DuckDuckGo primary, Google fallback
+    const errors: string[] = [];
     try {
       const results = await this.searchDuckDuckGo(query, limit);
       if (results.length > 0) return results;
-      console.error('[SearchService] DuckDuckGo returned 0 results, trying Google');
+      errors.push('DuckDuckGo returned 0 results');
     } catch (err) {
-      console.error('[SearchService] DuckDuckGo failed:', err instanceof Error ? err.message : err);
+      const msg = err instanceof Error ? err.message : String(err);
+      errors.push(`DuckDuckGo failed: ${msg}`);
     }
 
     try {
-      return await this.searchGoogle(query, limit);
+      const results = await this.searchGoogle(query, limit);
+      if (results.length > 0) return results;
+      errors.push('Google returned 0 results');
     } catch (err) {
-      console.error('[SearchService] Google failed:', err instanceof Error ? err.message : err);
-      return [];
+      const msg = err instanceof Error ? err.message : String(err);
+      errors.push(`Google failed: ${msg}`);
     }
+
+    throw new Error(`All engines failed for "${query}": ${errors.join(' | ')}`);
   }
 
   private async searchGoogle(query: string, limit: number): Promise<SearchResult[]> {
@@ -103,13 +121,11 @@ export class SearchService {
         { waitUntil: 'domcontentloaded', timeout: 20000 }
       );
 
-      // Detect CAPTCHA / bot-detection page
       const bodyText = await page.locator('body').innerText().catch(() => '');
       if (bodyText.includes('unusual traffic') || bodyText.includes('CAPTCHA')) {
-        throw new Error('Google returned a CAPTCHA page — headless Chrome was detected');
+        throw new Error('Google CAPTCHA detected');
       }
 
-      // Accept consent/cookie dialog if present
       const consentButton = page
         .locator('button:has-text("Accept all"), button:has-text("I agree"), button:has-text("Tümünü kabul et")')
         .first();
@@ -119,15 +135,17 @@ export class SearchService {
       }
 
       const results: SearchResult[] = [];
-      const blocks = page.locator('div.g:has(h3)');
-      const count = await blocks.count();
+      const headings = page.locator('h3.LC20lb');
+      const count = await headings.count();
 
       for (let i = 0; i < count && results.length < limit; i++) {
-        const block = blocks.nth(i);
-        const title = await block.locator('h3').first().textContent().catch(() => null);
-        const href = await block.locator('a[href]').first().getAttribute('href').catch(() => null);
-        const description = await block
-          .locator('.VwiC3b, [data-sncf], [style*="-webkit-line-clamp"]')
+        const heading = headings.nth(i);
+        const title = await heading.textContent().catch(() => null);
+        const link = heading.locator('xpath=ancestor::a[1]');
+        const href = await link.getAttribute('href').catch(() => null);
+        const container = heading.locator('xpath=ancestor::div[contains(@class,"tF2Cxc")]');
+        const description = await container
+          .locator('.VwiC3b, .IsZvec, [style*="-webkit-line-clamp"]')
           .first()
           .textContent()
           .catch(() => '');
@@ -135,6 +153,11 @@ export class SearchService {
         if (title && href && href.startsWith('http')) {
           results.push({ title: title.trim(), url: href, description: description?.trim() ?? '' });
         }
+      }
+
+      if (results.length === 0) {
+        const snippet = bodyText.substring(0, 500);
+        throw new Error(`Google: no results matched selectors. Page snippet: ${snippet}`);
       }
 
       return results;
@@ -153,16 +176,15 @@ export class SearchService {
         { waitUntil: 'domcontentloaded', timeout: 20000 }
       );
 
-      // Wait for result articles to render
-      await page.waitForSelector('article[data-testid] h2 a', { timeout: 10000 }).catch(() => null);
+      await page.waitForSelector('[data-testid="result"]', { timeout: 10000 }).catch(() => null);
 
       const results: SearchResult[] = [];
-      const blocks = page.locator('article[data-testid]');
+      const blocks = page.locator('[data-testid="result"]');
       const count = await blocks.count();
 
       for (let i = 0; i < count && results.length < limit; i++) {
         const block = blocks.nth(i);
-        const titleEl = block.locator('h2 a').first();
+        const titleEl = block.locator('[data-testid="result-title-a"]').first();
         const snippetEl = block.locator('[data-result="snippet"]').first();
 
         const title = await titleEl.textContent().catch(() => null);
@@ -175,6 +197,12 @@ export class SearchService {
         if (url.startsWith('http')) {
           results.push({ title: title.trim(), url, description: description?.trim() ?? '' });
         }
+      }
+
+      if (results.length === 0) {
+        const bodyText = await page.locator('body').innerText().catch(() => '');
+        const snippet = bodyText.substring(0, 500);
+        throw new Error(`DuckDuckGo: no results matched selectors. Page snippet: ${snippet}`);
       }
 
       return results;

@@ -38,15 +38,51 @@ export function createServer(searchService: SearchService): McpServer {
       }),
     },
     async ({ query, limit, engine }) => {
-      const results = await searchService.search(query, limit ?? 5, (engine ?? 'auto') as SearchEngine);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(results, null, 2),
-          },
-        ],
-      };
+      try {
+        const results = await searchService.search(query, limit ?? 5, (engine ?? 'auto') as SearchEngine);
+        return {
+          content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          isError: true,
+          content: [{ type: 'text', text: message }],
+        };
+      }
+    }
+  );
+
+  server.registerTool(
+    'search-test-html',
+    {
+      title: 'Search Test HTML',
+      description: 'Fetch raw HTML of a search engine results page for debugging selectors.',
+      inputSchema: z.object({
+        query: z.string().describe('Search query'),
+        engine: z
+          .enum(['duckduckgo', 'google'])
+          .describe('Search engine to fetch HTML from'),
+      }),
+    },
+    async ({ query, engine }) => {
+      try {
+        const encodedQuery = encodeURIComponent(query);
+        const url =
+          engine === 'google'
+            ? `https://www.google.com/search?q=${encodedQuery}&hl=en&num=5`
+            : `https://duckduckgo.com/?q=${encodedQuery}&ia=web`;
+        const html = await searchService.fetchSearchPageHtml(url);
+        return {
+          content: [{ type: 'text', text: html }],
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          isError: true,
+          content: [{ type: 'text', text: message }],
+        };
+      }
     }
   );
 
