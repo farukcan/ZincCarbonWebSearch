@@ -22,7 +22,7 @@ export function createServer(searchService: SearchService): McpServer {
       inputSchema: z.object({
         query: z.string().describe('Search query'),
         limit: z
-          .number()
+          .coerce.number()
           .min(1)
           .max(10)
           .optional()
