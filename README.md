@@ -75,6 +75,26 @@ Then add to `~/.cursor/mcp.json`:
 
 > In HTTP mode, the server must always be running. In Stdio mode, Cursor automatically starts and manages the server.
 
+### Docker Mode
+
+Start the server with Docker, then connect via HTTP:
+
+```bash
+docker run -p 3000:3000 farukcan/zinc-carbon-web-search
+```
+
+Add to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "web-search": {
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
 ## Tools
 
 ### `search`
@@ -111,15 +131,26 @@ Performs a web search.
 
 ## Docker
 
+### Using the Pre-built Image (recommended)
+
+The image is available on Docker Hub and can be used directly:
+
+```bash
+# Pull and run (HTTP mode on port 3000)
+docker run -p 3000:3000 farukcan/zinc-carbon-web-search
+
+# Run with custom port
+docker run -p 8080:8080 farukcan/zinc-carbon-web-search node dist/index.js --http --port 8080
+```
+
+### Building from Source
+
 ```bash
 # Build
 docker build -t zinc-carbon-web-search .
 
-# Run (HTTP mode on port 3000)
+# Run
 docker run -p 3000:3000 zinc-carbon-web-search
-
-# Run with custom port
-docker run -p 8080:8080 zinc-carbon-web-search node dist/index.js --http --port 8080
 ```
 
 The Docker image uses a multi-stage build with `node:22-slim` and installs only the Chromium browser via Playwright. The `--http` mode is the default entrypoint.

@@ -75,6 +75,26 @@ Ardından `~/.cursor/mcp.json` dosyasına ekle:
 
 > HTTP modunda sunucunun her zaman çalışıyor olması gerekir. Stdio modunda ise Cursor sunucuyu otomatik başlatır ve yönetir.
 
+### Docker Modu
+
+Docker ile sunucuyu başlat, ardından HTTP üzerinden bağlan:
+
+```bash
+docker run -p 3000:3000 farukcan/zinc-carbon-web-search
+```
+
+`~/.cursor/mcp.json` dosyasına ekle:
+
+```json
+{
+  "mcpServers": {
+    "web-search": {
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
 ## Araçlar (Tools)
 
 ### `search`
@@ -111,15 +131,26 @@ Web araması yapar.
 
 ## Docker
 
+### Hazır Image Kullanımı (önerilen)
+
+Image Docker Hub'da yayınlanmaktadır ve doğrudan kullanılabilir:
+
+```bash
+# Çek ve çalıştır (HTTP modunda, port 3000)
+docker run -p 3000:3000 farukcan/zinc-carbon-web-search
+
+# Özel port ile çalıştır
+docker run -p 8080:8080 farukcan/zinc-carbon-web-search node dist/index.js --http --port 8080
+```
+
+### Kaynaktan Derleme
+
 ```bash
 # Build
 docker build -t zinc-carbon-web-search .
 
-# Çalıştır (HTTP modunda, port 3000)
+# Çalıştır
 docker run -p 3000:3000 zinc-carbon-web-search
-
-# Özel port ile çalıştır
-docker run -p 8080:8080 zinc-carbon-web-search node dist/index.js --http --port 8080
 ```
 
 Docker image multi-stage build ile `node:22-slim` tabanlı oluşturulur ve yalnızca Chromium browser kurulur. Varsayılan entrypoint `--http` modudur.
