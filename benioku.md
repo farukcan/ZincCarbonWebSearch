@@ -109,6 +109,21 @@ Web araması yapar.
 ]
 ```
 
+## Docker
+
+```bash
+# Build
+docker build -t zinc-carbon-web-search .
+
+# Çalıştır (HTTP modunda, port 3000)
+docker run -p 3000:3000 zinc-carbon-web-search
+
+# Özel port ile çalıştır
+docker run -p 8080:8080 zinc-carbon-web-search node dist/index.js --http --port 8080
+```
+
+Docker image multi-stage build ile `node:22-slim` tabanlı oluşturulur ve yalnızca Chromium browser kurulur. Varsayılan entrypoint `--http` modudur.
+
 ## Proje Yapısı
 
 ```

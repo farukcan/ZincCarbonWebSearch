@@ -109,6 +109,21 @@ Performs a web search.
 ]
 ```
 
+## Docker
+
+```bash
+# Build
+docker build -t zinc-carbon-web-search .
+
+# Run (HTTP mode on port 3000)
+docker run -p 3000:3000 zinc-carbon-web-search
+
+# Run with custom port
+docker run -p 8080:8080 zinc-carbon-web-search node dist/index.js --http --port 8080
+```
+
+The Docker image uses a multi-stage build with `node:22-slim` and installs only the Chromium browser via Playwright. The `--http` mode is the default entrypoint.
+
 ## Project Structure
 
 ```
