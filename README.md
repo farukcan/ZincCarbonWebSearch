@@ -1,67 +1,67 @@
 # Zinc Carbon Web Search MCP Server
 
-Playwright kullanarak web araması yapan bir MCP (Model Context Protocol) server. Google ve DuckDuckGo'yu destekler; DuckDuckGo primary engine olarak kullanılır, Google fallback olarak devreye girer.
+An MCP (Model Context Protocol) server that performs web searches using Playwright. Supports Google and DuckDuckGo; DuckDuckGo is used as the primary engine, with Google as a fallback.
 
-## Gereksinimler
+## Requirements
 
 - Node.js 18+
-- Google Chrome (sistem genelinde kurulu olmalı)
+- Google Chrome (installed system-wide)
 
-> Sistemde Chrome yoksa Playwright kendi Chromium'unu kullanır. `npx playwright install chromium` ile kurabilirsin.
+> If Chrome is not available on the system, Playwright will use its own Chromium. You can install it with `npx playwright install chromium`.
 
-## Kurulum
+## Installation
 
 ```bash
 npm install
 npm run build
 ```
 
-## Kullanım
+## Usage
 
-### Stdio Modu (Cursor / Claude Desktop)
+### Stdio Mode (Cursor / Claude Desktop)
 
 ```bash
 node dist/index.js
 ```
 
-### Streamable HTTP Modu
+### Streamable HTTP Mode
 
 ```bash
-# Varsayılan port: 3000
+# Default port: 3000
 node dist/index.js --http
 
-# Özel port
+# Custom port
 node dist/index.js --http --port 8080
 ```
 
-HTTP modunda endpoint: `POST http://localhost:3000/mcp`
+In HTTP mode, the endpoint is: `POST http://localhost:3000/mcp`
 
-## Cursor'a Entegrasyon
+## Cursor Integration
 
-### Stdio Modu (önerilen)
+### Stdio Mode (recommended)
 
-`~/.cursor/mcp.json` dosyasına ekle:
+Add to `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "web-search": {
       "command": "node",
-      "args": ["/tam/yol/ZincCarbonWebSearch/dist/index.js"]
+      "args": ["/full/path/ZincCarbonWebSearch/dist/index.js"]
     }
   }
 }
 ```
 
-### HTTP Modu (Streamable HTTP)
+### HTTP Mode (Streamable HTTP)
 
-Önce sunucuyu ayağa kaldır:
+First, start the server:
 
 ```bash
 node dist/index.js --http --port 3000
 ```
 
-Ardından `~/.cursor/mcp.json` dosyasına ekle:
+Then add to `~/.cursor/mcp.json`:
 
 ```json
 {
@@ -73,31 +73,31 @@ Ardından `~/.cursor/mcp.json` dosyasına ekle:
 }
 ```
 
-> HTTP modunda sunucunun her zaman çalışıyor olması gerekir. Stdio modunda ise Cursor sunucuyu otomatik başlatır ve yönetir.
+> In HTTP mode, the server must always be running. In Stdio mode, Cursor automatically starts and manages the server.
 
-## Araçlar (Tools)
+## Tools
 
 ### `search`
 
-Web araması yapar.
+Performs a web search.
 
-| Parametre | Tip | Zorunlu | Açıklama |
-|-----------|-----|---------|----------|
-| `query` | string | ✓ | Arama sorgusu |
-| `limit` | number | — | Maksimum sonuç sayısı (varsayılan: 5, max: 10) |
-| `engine` | string | — | Arama motoru: `auto` \| `duckduckgo` \| `google` (varsayılan: `auto`) |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | ✓ | Search query |
+| `limit` | number | — | Maximum number of results (default: 5, max: 10) |
+| `engine` | string | — | Search engine: `auto` \| `duckduckgo` \| `google` (default: `auto`) |
 
-**Engine davranışı:**
+**Engine behavior:**
 
-| Değer | Açıklama |
-|-------|----------|
-| `auto` | Önce DuckDuckGo dener, 0 sonuç veya hata olursa Google'a fallback yapar |
-| `duckduckgo` | Yalnızca DuckDuckGo kullanır |
-| `google` | Yalnızca Google kullanır |
+| Value | Description |
+|-------|-------------|
+| `auto` | Tries DuckDuckGo first, falls back to Google if 0 results or error |
+| `duckduckgo` | Uses only DuckDuckGo |
+| `google` | Uses only Google |
 
-> **Not:** Google, headless Chrome'u genellikle CAPTCHA ile engeller. `google` engine'i yalnızca non-headless veya CAPTCHA bypass mekanizması olan ortamlarda güvenilir çalışır. `auto` ve `duckduckgo` önerilir.
+> **Note:** Google often blocks headless Chrome with CAPTCHA. The `google` engine only works reliably in non-headless environments or those with CAPTCHA bypass mechanisms. `auto` and `duckduckgo` are recommended.
 
-**Örnek çıktı:**
+**Example output:**
 
 ```json
 [
@@ -109,19 +109,19 @@ Web araması yapar.
 ]
 ```
 
-## Proje Yapısı
+## Project Structure
 
 ```
 src/
-├── index.ts    — Entry point; transport seçimi (stdio / HTTP), graceful shutdown
-├── server.ts   — McpServer oluşturma, search tool kaydı
-└── search.ts   — SearchService; Playwright browser yönetimi, Google/DuckDuckGo scraping
+├── index.ts    — Entry point; transport selection (stdio / HTTP), graceful shutdown
+├── server.ts   — McpServer creation, search tool registration
+└── search.ts   — SearchService; Playwright browser management, Google/DuckDuckGo scraping
 ```
 
-## NPM Scriptleri
+## NPM Scripts
 
-| Script | Açıklama |
-|--------|----------|
-| `npm run build` | TypeScript derle (`dist/` klasörüne) |
-| `npm start` | Stdio modunda başlat |
-| `npm run start:http` | HTTP modunda başlat (port 3000) |
+| Script | Description |
+|--------|-------------|
+| `npm run build` | Compile TypeScript (to `dist/`) |
+| `npm start` | Start in stdio mode |
+| `npm run start:http` | Start in HTTP mode (port 3000) |
