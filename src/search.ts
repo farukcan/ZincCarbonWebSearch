@@ -41,7 +41,13 @@ export class SearchService {
     } catch {
       this.browser = await chromium.launch({
         headless: true,
-        args: ['--disable-blink-features=AutomationControlled', '--no-sandbox'],
+        args: [
+          '--disable-blink-features=AutomationControlled',
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+        ],
       });
     }
     this.context = await this.browser.newContext({
