@@ -79,19 +79,19 @@ export class SearchService {
     }
   }
 
-  async search(query: string, limit: number, engine: SearchEngine = 'auto', language: string = 'en'): Promise<SearchResult[]> {
+  async search(query: string, limit: number, engine: SearchEngine = 'auto', locale: string = 'en'): Promise<SearchResult[]> {
     if (engine === 'duckduckgo') {
-      return this.searchDuckDuckGo(query, limit, language);
+      return this.searchDuckDuckGo(query, limit, locale);
     }
 
     if (engine === 'google') {
-      return this.searchGoogle(query, limit, language);
+      return this.searchGoogle(query, limit, locale);
     }
 
     // auto: DuckDuckGo primary, Google fallback
     const errors: string[] = [];
     try {
-      const results = await this.searchDuckDuckGo(query, limit, language);
+      const results = await this.searchDuckDuckGo(query, limit, locale);
       if (results.length > 0) return results;
       errors.push('DuckDuckGo returned 0 results');
     } catch (err) {
@@ -100,7 +100,7 @@ export class SearchService {
     }
 
     try {
-      const results = await this.searchGoogle(query, limit, language);
+      const results = await this.searchGoogle(query, limit, locale);
       if (results.length > 0) return results;
       errors.push('Google returned 0 results');
     } catch (err) {
@@ -111,14 +111,15 @@ export class SearchService {
     throw new Error(`All engines failed for "${query}": ${errors.join(' | ')}`);
   }
 
-  private async searchGoogle(query: string, limit: number, language: string = 'en'): Promise<SearchResult[]> {
+  private async searchGoogle(query: string, limit: number, locale: string = 'en'): Promise<SearchResult[]> {
     if (!this.context) throw new Error('SearchService not initialized');
+    const lang = locale.split('-')[0];
 
     const page = await this.context.newPage();
     try {
-      await page.setExtraHTTPHeaders({ 'Accept-Language': language });
+      await page.setExtraHTTPHeaders({ 'Accept-Language': `${locale},${lang};q=0.9` });
       await page.goto(
-        `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=${language}&num=${limit}`,
+        `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=${lang}&num=${limit}`,
         { waitUntil: 'domcontentloaded', timeout: 20000 }
       );
 
@@ -167,14 +168,18 @@ export class SearchService {
     }
   }
 
-  private async searchDuckDuckGo(query: string, limit: number, language: string = 'en'): Promise<SearchResult[]> {
+  private async searchDuckDuckGo(query: string, limit: number, locale: string = 'en'): Promise<SearchResult[]> {
     if (!this.context) throw new Error('SearchService not initialized');
+    const parts = locale.split('-');
+    const lang = parts[0]!.toLowerCase();
+    const country = parts.length > 1 ? parts[1]!.toLowerCase() : lang;
+    const kl = `${country}-${lang}`;
 
     const page = await this.context.newPage();
     try {
-      await page.setExtraHTTPHeaders({ 'Accept-Language': language });
+      await page.setExtraHTTPHeaders({ 'Accept-Language': `${locale},${lang};q=0.9` });
       await page.goto(
-        `https://duckduckgo.com/?q=${encodeURIComponent(query)}&kl=${language}-${language}&ia=web`,
+        `https://duckduckgo.com/?q=${encodeURIComponent(query)}&kl=${kl}&ia=web`,
         { waitUntil: 'domcontentloaded', timeout: 20000 }
       );
 

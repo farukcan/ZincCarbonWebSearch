@@ -32,16 +32,16 @@ export function createServer(searchService: SearchService): McpServer {
             'Search engine to use. "auto" tries DuckDuckGo first, falls back to Google. ' +
             'Default: "auto"'
           ),
-        language: z
+        locale: z
           .string()
           .optional()
-          .describe('Language code for search results (default: "en"). Examples: "en", "tr", "de", "fr"'),
+          .describe('Locale for search results (default: "en"). Examples: "en", "tr-TR", "ja-JP", "de-DE"'),
       }),
     },
-    async ({ query, limit, engine, language }) => {
+    async ({ query, limit, engine, locale }) => {
       try {
         const parsedLimit = Math.min(10, Math.max(1, parseInt(limit ?? '5', 10) || 5));
-        const results = await searchService.search(query, parsedLimit, (engine ?? 'auto') as SearchEngine, language ?? 'en');
+        const results = await searchService.search(query, parsedLimit, (engine ?? 'auto') as SearchEngine, locale ?? 'en');
         return {
           content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
         };
