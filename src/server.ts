@@ -22,11 +22,9 @@ export function createServer(searchService: SearchService): McpServer {
       inputSchema: z.object({
         query: z.string().describe('Search query'),
         limit: z
-          .coerce.number()
-          .min(1)
-          .max(10)
+          .string()
           .optional()
-          .describe('Maximum number of results to return (default: 5)'),
+          .describe('Maximum number of results to return, 1-10 (default: 5)'),
         engine: z
           .enum(['auto', 'duckduckgo', 'google'])
           .optional()
@@ -38,7 +36,8 @@ export function createServer(searchService: SearchService): McpServer {
     },
     async ({ query, limit, engine }) => {
       try {
-        const results = await searchService.search(query, limit ?? 5, (engine ?? 'auto') as SearchEngine);
+        const parsedLimit = Math.min(10, Math.max(1, parseInt(limit ?? '5', 10) || 5));
+        const results = await searchService.search(query, parsedLimit, (engine ?? 'auto') as SearchEngine);
         return {
           content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
         };
