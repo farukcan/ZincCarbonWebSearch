@@ -1,5 +1,19 @@
 # Zinc Carbon Web Search MCP Server
 
+[![npm version](https://img.shields.io/npm/v/zinc-carbon-web-search?color=blue&logo=npm)](https://www.npmjs.com/package/zinc-carbon-web-search)
+[![Docker Pulls](https://img.shields.io/docker/pulls/farukcan/zinc-carbon-web-search?logo=docker&color=2496ED)](https://hub.docker.com/r/farukcan/zinc-carbon-web-search)
+[![Docker Image Size](https://img.shields.io/docker/image-size/farukcan/zinc-carbon-web-search?logo=docker&color=2496ED)](https://hub.docker.com/r/farukcan/zinc-carbon-web-search)
+[![License: ISC](https://img.shields.io/badge/License-ISC-green.svg)](https://opensource.org/licenses/ISC)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Playwright](https://img.shields.io/badge/Playwright-1.51-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blueviolet)](https://modelcontextprotocol.io)
+[![Search: DuckDuckGo](https://img.shields.io/badge/Search-DuckDuckGo-DE5833?logo=duckduckgo&logoColor=white)](https://duckduckgo.com)
+[![Search: Google](https://img.shields.io/badge/Search-Google-4285F4?logo=google&logoColor=white)](https://google.com)
+[![HTTP Mode](https://img.shields.io/badge/Transport-HTTP%20%7C%20Stdio-orange)](https://modelcontextprotocol.io)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/farukcan/zinc-carbon-web-search/pulls)
+[![GitHub Stars](https://img.shields.io/github/stars/farukcan/zinc-carbon-web-search?style=social)](https://github.com/farukcan/zinc-carbon-web-search)
+
 An MCP (Model Context Protocol) server that performs web searches using Playwright. Supports Google and DuckDuckGo; DuckDuckGo is used as the primary engine, with Google as a fallback.
 
 ## Requirements
